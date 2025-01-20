@@ -2,16 +2,28 @@ import sqlite3
 
 
 def initiate_db(db_name="products.db"):
-    """Создаёт таблицу Products, если она ещё не создана."""
+    """Создаёт таблицы Products и Users, если они ещё не созданы."""
     connection = sqlite3.connect(db_name)
     cursor = connection.cursor()
 
+    # Создание таблицы Products
     cursor.execute('''
     CREATE TABLE IF NOT EXISTS Products (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         title TEXT NOT NULL,
         description TEXT,
         price INTEGER NOT NULL
+    )
+    ''')
+
+    # Создание таблицы Users
+    cursor.execute('''
+    CREATE TABLE IF NOT EXISTS Users (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        username TEXT NOT NULL,
+        email TEXT NOT NULL,
+        age INTEGER NOT NULL,
+        balance INTEGER NOT NULL
     )
     ''')
 
@@ -120,7 +132,35 @@ def remove_duplicates(db_name="products.db"):
 
     connection.commit()
     connection.close()
-    print("Дубликаты удалены из таблицы ProductImages.")
+    print("Дубликаты удалены из таблиц Products и ProductImages.")
+
+
+def add_user(username, email, age, db_name="products.db"):
+    """Добавляет нового пользователя в таблицу Users."""
+    connection = sqlite3.connect(db_name)
+    cursor = connection.cursor()
+
+    cursor.execute('''
+    INSERT INTO Users (username, email, age, balance) 
+    VALUES (?, ?, ?, ?)
+    ''', (username, email, age, 1000))
+
+    connection.commit()
+    connection.close()
+
+
+def is_included(username, db_name="products.db"):
+    """Проверяет, существует ли пользователь с данным именем."""
+    connection = sqlite3.connect(db_name)
+    cursor = connection.cursor()
+
+    cursor.execute('''
+    SELECT 1 FROM Users WHERE username = ? LIMIT 1
+    ''', (username,))
+    result = cursor.fetchone()
+
+    connection.close()
+    return result is not None
 
 
 if __name__ == "__main__":
@@ -129,5 +169,5 @@ if __name__ == "__main__":
     create_images_table()
     populate_images_table()
     remove_duplicates()
-    all_products = get_all_products()
-    print("Список всех продуктов:", all_products)
+
+
